@@ -608,6 +608,15 @@ armcortexm7cc () {
  endian="little"
 }
 
+armcortexm33cc () {
+    findarmgcc
+    # STM32U5 uses Cortex-M33 with ARMv8-M Mainline and Single-Precision FPU
+    # Note: -mcpu=cortex-m33 implies the architecture, don't use -march with it
+    GCCOPTS="$CCOPTS -mcpu=cortex-m33 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16"
+    GCCOPTIMIZE="-fomit-frame-pointer"
+    endian="little"
+}
+
 mipselcc () {
  prefixtools mipsel-elf-
  # mips is predefined, but we want it for paths. use __mips instead
@@ -1731,6 +1740,9 @@ cat <<EOF
                                                  300) R3 Pro II
  ==Echo project==          ==Surfans==           301) R1
  270) Echo R1 (WIP)        280) F28 (WIP)
+
+ ==Duro project==
+ 271) Duro 
 
  ==Nintendo==
  290) Nintendo 3DS (WIP)
@@ -4113,6 +4125,40 @@ fi
     t_cpu="arm"
     t_manufacturer="stm32"
     t_model="echoplayer"
+    # generate debug symbols by default; these will be present in the
+    # initial '.elf' file but will be stripped from the target binary.
+    GCCOPTS="-g $GCCOPTS"
+    # set page size to 4k to guarantee reasonable on-disk alignment,
+    # which improves disk read speed; on ARM binutils defaults to 64k
+    # which adds quite a bit of unnecessary padding.
+    GCCOPTS="-Wl,-z,max-page-size=4096 $GCCOPTS"
+    USE_ELF="yes"
+    ;;
+
+
+    271|duro)
+    target_id=271
+    modelname="duro"
+    target="DURO"
+    memory=2560  # 2.5 MB SRAM on STM32U5A5
+    armcortexm33cc
+    appextra="recorder:gui"
+    plugins="no"
+    tool="cp "
+    boottool="cp "
+    output="rockbox.duro"
+    bootoutput="bootloader.duro"
+    sysfontbl="16-Terminus"
+    sysfont="14-Rockbox-Mix"
+    # toolset is the tools within the tools directory that we build for
+    # this particular target.
+    toolset="$genericbitmaptools scramble uclpack reggen"
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    # architecture, manufacturer and model for the target-tree build
+    t_cpu="arm"
+    t_manufacturer="stm32u5"
+    t_model="duro"
     # generate debug symbols by default; these will be present in the
     # initial '.elf' file but will be stripped from the target binary.
     GCCOPTS="-g $GCCOPTS"

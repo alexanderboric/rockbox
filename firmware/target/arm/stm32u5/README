@@ -1,0 +1,211 @@
+Rockbox STM32U5A5 Duro Port
+============================
+
+This is a Rockbox port for the STM32U5A5-based Duro audio player device.
+
+Project Structure
+=================
+
+The port is organized as follows:
+
+firmware/target/arm/stm32u5/
+  ├── cpu-stm32u5a5.h          - CPU header with memory layout
+  ├── stm32u5a5.h              - STM32U5A5 register definitions
+  ├── clock-stm32u5.h          - Clock structures and definitions
+  ├── duro/                     - Device-specific code
+  │   ├── clock-duro.{c,h}     - Clock initialization
+  │   ├── system-duro.{c,h}    - System configuration
+  │   ├── lcd-duro.{c,h}       - LCD/display driver
+  │   ├── i2c-duro.{c,h}       - I2C bus support
+  │   ├── button-duro.{c,h}    - Button/keypad driver
+  │   ├── backlight-duro.{c,h} - Backlight control
+  │   ├── audiohw-duro.{c,h}   - Audio hardware
+  │   ├── pcm-duro.{c,h}       - PCM audio streaming
+  │   ├── sdmmc-duro.{c,h}     - SD/MMC card support
+  │   └── usb-duro.{c,h}       - USB support
+  ├── {gpio,i2c,sdmmc,spi,system,timer,usb,debug}-stm32u5.c
+  └── crt0-stm32u5.S, vectors-stm32u5.S - Startup code
+
+firmware/export/
+  ├── config/duro.h            - Duro configuration header
+  ├── stm32u5A5-config.h       - STM32U5 architecture config
+
+bootloader/
+  └── duro.c                   - Duro bootloader
+
+apps/keymaps/
+  └── keymap-duro.c            - Button mappings
+
+Key Features
+============
+
+1. CPU: STM32U5A5 (ARM Cortex-M33, 160 MHz max)
+2. Memory: 2.5 MB SRAM
+3. Display: 480x360 RGB565 TFT LCD via LTDC
+4. Audio: SAI1 audio interface, supports AIC3x codec
+5. Storage: SD/MMC card via SDMMC1
+6. USB: USB OTG High-Speed or Full-Speed
+7. Input: Power, Hold, Volume up/down buttons
+8. Power: Battery monitoring with charging
+
+Build Instructions
+==================
+
+To build the Duro port:
+
+    ./tools/configure
+    # Select option 271 (Duro)
+    make
+
+Bootloader:
+    make bootloader
+
+Implementation Status
+=====================
+
+The port framework is complete with the following status:
+
+IMPLEMENTED (Framework):
+  ✓ CPU definitions and memory layout
+  ✓ Device configuration files
+  ✓ Build system integration
+  ✓ Bootloader skeleton
+  ✓ Device-specific headers
+
+IMPLEMENTED (Stub Functions - Require Hardware-Specific Code):
+  ✓ Clock initialization framework
+  ✓ GPIO support (placeholder)
+  ✓ I2C bus support (placeholder)
+  ✓ SD/MMC support (placeholder)
+  ✓ SPI support (placeholder)
+  ✓ USB support (placeholder)
+  ✓ Timer support (placeholder)
+  ✓ RTC support (placeholder)
+  ✓ Debug support (placeholder)
+
+TODO (Hardware Integration Required):
+  □ Complete clock tree initialization (PLL configurations)
+  □ Implement GPIO pin multiplexing
+  □ Implement I2C communication
+  □ Implement SD/MMC card initialization
+  □ Implement audio codec integration (AIC3x)
+  □ Implement LCD/LTDC display driver
+  □ Implement USB device functionality
+  □ Implement battery management
+  □ Add power management and sleep modes
+  □ Implement bootloader firmware loading
+  □ Test and optimize performance
+
+Configuration Notes
+===================
+
+The Duro configuration is set in firmware/export/config/duro.h:
+
+- Display: 480x360 pixels, RGB565 (16-bit)
+- Audio: 44.1 kHz default sample rate
+- Plugin buffer: 1 MB
+- Codec buffer: 512 KB
+- RTC: STM32U5 internal RTC
+- USB IDs: VID=0x6666, PID=0xDU50
+
+Clock Configuration
+===================
+
+The STM32U5A5 supports multiple clock sources:
+- HSI: 16 MHz internal oscillator
+- HSE: External oscillator (16-24 MHz typical)
+- PLL1: Main system clock (up to 160 MHz)
+- PLL2: Audio clock
+- PLL3: Peripheral clocks
+- LSI: 32 kHz low-speed oscillator
+- LSE: 32.768 kHz RTC oscillator (external)
+
+The current framework uses:
+- HSI as primary clock source
+- PLL1Q for SDMMC (160 MHz)
+- PLL3R for LTDC/LCD (40 MHz typical)
+- SAI1 for audio interface
+
+Hardware Integration Notes
+===========================
+
+1. GPIO Configuration:
+   - Power button: GPIOF[0]
+   - Hold button: GPIOF[1]
+   - Volume up: GPIOG[0]
+   - Volume down: GPIOG[1]
+   (Adjust in button-duro.h based on actual schematic)
+
+2. I2C Devices:
+   - Audio codec: 0x18
+   - PMIC: 0x6A
+   - Touch controller: 0x2C
+   (Configure in i2c-duro.h)
+
+3. Audio:
+   - Codec: AIC34xx family
+   - Interface: SAI1 (Serial Audio Interface)
+   - Sample rates: 44.1 kHz, 48 kHz (configurable)
+
+4. Display:
+   - Interface: LTDC (LCD-TFT Display Controller)
+   - Resolution: 480x360 @ 16-bit RGB565
+   - Framebuffer: SRAM-based
+
+Development Tips
+================
+
+1. Use the debugger to verify clock initialization:
+   - Check RCC register values
+   - Verify PLL lock status
+   - Confirm bus clock frequencies
+
+2. Test peripheral initialization in order:
+   - Clocks
+   - GPIO
+   - I2C (codec communication)
+   - Display
+   - Audio
+   - Storage
+
+3. Reference Implementation:
+   - See firmware/target/arm/stm32/echoplayer/ for H7 reference
+   - STM32U5 datasheet for register definitions
+   - This port's header files for required APIs
+
+Troubleshooting
+===============
+
+If the device doesn't boot:
+1. Check clock configuration (verify PLL lock)
+2. Verify GPIO pin assignments
+3. Check bootloader addresses in linker script
+4. Ensure stack pointer is correctly initialized
+
+If USB doesn't work:
+1. Verify OTG PHY configuration
+2. Check USB clock source
+3. Confirm USB device descriptors
+
+If audio doesn't play:
+1. Verify I2C codec communication
+2. Check SAI clock and pin configuration
+3. Confirm DMA setup for audio buffers
+
+License
+=======
+
+This port is licensed under the GNU General Public License v2.
+See COPYING file in the Rockbox root directory.
+
+Contributors
+============
+
+Alexander Boric <alexander.boric@uni-muenster.de>
+
+References
+==========
+
+- STM32U5A5 Datasheet
+- STM32H743 Rockbox Port (reference implementation)
+- Rockbox Documentation: https://www.rockbox.org/

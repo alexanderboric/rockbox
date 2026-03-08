@@ -83,5 +83,8 @@
 #if CONFIG_CPU == STM32H743
 #include "cpu-stm32h743.h"
 #endif
+#if CONFIG_CPU == STM32U5A5
+#include "cpu-stm32u5a5.h"
+#endif
 
 #endif /* __CPU_H */

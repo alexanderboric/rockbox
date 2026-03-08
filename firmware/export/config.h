@@ -84,6 +84,7 @@
 #define RK27XX       2700
 #define X1000        1000
 #define STM32H743   32743
+#define STM32U5A5     325
 #define N10480H     10480
 
 /* platforms
@@ -155,6 +156,7 @@
 #define FIIO_M3K_PAD       73
 #define SHANLING_Q1_PAD    74
 #define ECHO_R1_PAD        75
+#define DURO_PAD           80
 #define SURFANS_F28_PAD    76
 #define RG_NANO_PAD        77
 #define CTRU_PAD           78
@@ -275,6 +277,7 @@
 #define LCD_SHANLING_Q1   70 /* as used by the Shanling Q1 */
 #define LCD_EROSQ         71 /* as used by the ErosQ (native) */
 #define LCD_ECHO_R1       72 /* ILI9342, as used by the Echo R1 */
+#define LCD_DURO          73 /* 480x360 TFT LCD for Duro */
 
 /* LCD_PIXELFORMAT */
 #define HORIZONTAL_PACKING 1
@@ -353,6 +356,7 @@ Lyre prototype 1 */
 #define RTC_NANO3G   25 /* Dialog Semiconductor D1671 ??? */
 #define RTC_NANO4G   26 /* Dialog Semiconductor D1759 ??? */
 #define RTC_STM32H743 27
+#define RTC_STM32U5  28 /* STM32U5 internal RTC */
 
 /* USB On-the-go */
 #define USBOTG_M66591   6591 /* M:Robe 500 */
@@ -367,6 +371,7 @@ Lyre prototype 1 */
 #define USBOTG_DESIGNWARE 6401 /* Synopsys DesignWare OTG, used in S5L8701/S5L8702/S5L8720/AS3252v2 */
 #define USBOTG_RK27XX   2700 /* Rockchip rk27xx */
 #define USBOTG_TNETV105 105  /* TI TNETV105 */
+#define USBOTG_STM32U5  5100 /* STM32U5 OTG High-Speed */
 
 /* Multiple cores */
 #define CPU 0
@@ -573,6 +578,8 @@ Lyre prototype 1 */
 #include "config/erosqnative.h"
 #elif defined(ECHO_R1)
 #include "config/echor1.h"
+#elif defined(DURO)
+#include "config/duro.h"
 #elif defined(SURFANS_F28)
 #include "config/surfansf28.h"
 #elif defined(RG_NANO)

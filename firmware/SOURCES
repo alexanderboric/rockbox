@@ -493,6 +493,8 @@ drivers/rtc/rtc_d2.c
 drivers/rtc/rtc_imx233.c
 #elif (CONFIG_RTC == RTC_STM32H743)
 drivers/rtc/rtc_stm32h7.c
+#elif (CONFIG_RTC == RTC_STM32U5)
+drivers/rtc/rtc_stm32u5.c
 #endif /* (CONFIG_RTC == RTC_) */
 #endif /* PLATFORM_NATIVE */
 
@@ -1951,6 +1953,23 @@ target/arm/stm32/usb-stm32h7.c
 #endif
 #endif
 
+#if CONFIG_CPU == STM32U5A5
+target/arm/stm32u5/crt0-stm32u5.S
+target/arm/stm32u5/vectors-stm32u5.S
+#ifndef BOOTLOADER
+target/arm/stm32u5/debug-stm32u5.c
+#endif
+target/arm/stm32u5/gpio-stm32u5.c
+target/arm/stm32u5/i2c-stm32u5.c
+target/arm/stm32u5/sdmmc-stm32u5.c
+target/arm/stm32u5/spi-stm32u5.c
+target/arm/stm32u5/system-stm32u5.c
+target/arm/stm32u5/timer-stm32u5.c
+#if defined(HAVE_USBSTACK)
+target/arm/stm32u5/usb-stm32u5.c
+#endif
+#endif
+
 #if defined(ECHO_R1)
 target/arm/stm32/echoplayer/audiohw-echoplayer.c
 target/arm/stm32/echoplayer/backlight-echoplayer.c
@@ -1965,6 +1984,28 @@ target/arm/stm32/echoplayer/power-echoplayer.c
 target/arm/stm32/echoplayer/sdmmc-echoplayer.c
 target/arm/stm32/echoplayer/system-echoplayer.c
 target/arm/stm32/echoplayer/usb-echoplayer.c
+#endif
+
+#if defined(DURO)
+#if defined(HAVE_AIC310X) && defined(STM32U5A5)
+target/arm/stm32u5/duro/audiohw-duro.c
+#endif
+target/arm/stm32u5/duro/audiohw-duro.c
+target/arm/stm32u5/duro/backlight-duro.c
+target/arm/stm32u5/duro/button-duro.c
+target/arm/stm32u5/duro/clock-duro.c
+target/arm/stm32u5/duro/i2c-duro.c
+target/arm/stm32u5/duro/lcd-duro.c
+target/arm/stm32u5/duro/audiohw-duro.c
+#ifndef BOOTLOADER
+target/arm/stm32u5/duro/pcm-duro.c
+#endif
+target/arm/stm32u5/duro/power-duro.c
+target/arm/stm32u5/duro/sdmmc-duro.c
+target/arm/stm32u5/duro/system-duro.c
+target/arm/stm32u5/duro/usb-duro.c
+target/arm/stm32u5/duro/rtc-duro.c
+target/arm/stm32u5/crt0-stm32u5.S
 #endif
 
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)
