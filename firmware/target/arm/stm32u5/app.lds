@@ -47,21 +47,29 @@ SECTIONS
     .text :
     {
         loadaddress = .; /* only needed to keep ROLO happy */
+
+        *(.init*);
         *(.text*);
         *(.rodata*);
     } > SRAM :sdram
 
     .data :
     {
+        _databegin = .;
         *(.data*);
         *(.sdata*);
+        _dataend = .;
     } > SRAM :sdram
+
+    _datacopy = LOADADDR(.data);
 
     .bss ADDR(.data) + SIZEOF(.data) :
     {
+        _bssbegin = .;
         *(.bss*);
         *(.sbss*);
         *(COMMON);
+        _bssend = .;
     } > SRAM :NONE
 
     /* extra sections */
@@ -77,22 +85,19 @@ SECTIONS
     } > ITCM :NONE
 
     /* Buffer allocations in PSRAM */
-    .audiobuffer (NOLOAD) :
-    {
-        audiobuffer = .;
-        . += (8 * 1024 * 1024 - 0x100000 - 0x80000);  /* PSRAM size - plugin - codec buffers */
-        audiobufend = .;
-    } > PSRAM :NONE
-
-    .codecbuf (NOLOAD) :
-    {
-        codecbuf = .;
-        . += 0x80000;  /* CODEC_SIZE */
-    } > PSRAM :NONE
-
-    .pluginbuf (NOLOAD) :
-    {
-        pluginbuf = .;
-        . += 0x100000;  /* PLUGIN_BUFFER_SIZE */
-    } > PSRAM :NONE
+    /*
+     * Audio, codec, and plugin buffers in external PSRAM (OctoSPI at 0x90000000).
+     * The total PSRAM available is STM32_PSRAM_SIZE (8 MB).
+     * Layout: [audio buffer][codec buffer][plugin buffer]
+     * Sizes are from config: CODEC_SIZE=0x80000, PLUGIN_BUFFER_SIZE=0x100000
+     */
+    audiobuffer = ORIGIN(PSRAM);
+    audiobufend = ORIGIN(PSRAM) + LENGTH(PSRAM) - CODEC_SIZE - PLUGIN_BUFFER_SIZE;
+    codecbuf    = audiobufend;
+    pluginbuf   = codecbuf + CODEC_SIZE;
 }
+
+EXTERN(__vectors_arm);
+EXTERN(__vectors_platform);
+ASSERT(DEFINED(__vectors_arm), "ARM exception vectors are not defined.");
+ASSERT(DEFINED(__vectors_platform), "Platform exception vectors are not defined.");

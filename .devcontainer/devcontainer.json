@@ -1,14 +1,16 @@
 {
-    "name": "Rockbox STM32U5 Dev",
-    "image": "yourusername/rockbox-stm32-ready:latest", 
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/rockbox/rockbox,type=bind",
-    "workspaceFolder": "/home/rockbox/rockbox",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "ms-vscode.cpptools"
-            ]
-        }
-    },
-    "remoteUser": "root"
+  "name": "Rockbox Dev",
+  "image": "ghcr.io/alexanderboric/rockbox:latest",
+  "remoteUser": "rockbox",
+  "remoteEnv": {
+    "PATH": "/usr/local/bin:${containerEnv:PATH}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "anthropic.claude-vscode"
+      ]
+    }
+  }
 }

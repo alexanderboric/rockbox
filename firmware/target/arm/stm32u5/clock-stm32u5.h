@@ -1,30 +1,61 @@
-/*
- * STM32U5 Clock Support Header
- * Defines clock structures and initialization functions
- */
-
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2026 by Aidan MacDonald
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #ifndef __CLOCK_STM32U5_H__
 #define __CLOCK_STM32U5_H__
 
-#include <stdint.h>
+#include "system.h"
+#include <stdbool.h>
+#include <stddef.h>
 
-/* Clock structure for managing peripheral clocks */
-struct stm32_clock {
+/*
+ * Clock descriptor used by peripheral drivers.
+ * en_reg/en_bit: clock enable register address and bit mask.
+ * lpen_reg is unused on STM32U5 (no separate LP enable), set to 0.
+ */
+struct stm32_clock
+{
     uint32_t frequency;
+
     uint32_t en_reg;
     uint32_t en_bit;
-    uint32_t lpen_reg;
+
+    uint32_t lpen_reg;   /* unused, kept for API compatibility */
     uint32_t lpen_bit;
 };
 
-/* Clock source definitions */
-#define STM32_CLKSRC_HSI    0   /* Internal 16 MHz */
-#define STM32_CLKSRC_LSI    1   /* Internal 32 kHz */
-#define STM32_CLKSRC_HSE    2   /* External (typically 16 MHz) */
-#define STM32_CLKSRC_LSE    3   /* External 32.768 kHz RTC */
-#define STM32_CLKSRC_PLL1   4   /* PLL1 output */
-#define STM32_CLKSRC_PLL2   5   /* PLL2 output */
-#define STM32_CLKSRC_PLL3   6   /* PLL3 output */
-#define STM32_CLKSRC_MSIK   7   /* Multispeed internal kernel clock */
+static inline void stm32_clock_enable(const struct stm32_clock *clk)
+{
+    if (clk->en_reg)
+        *(volatile uint32_t *)clk->en_reg |= clk->en_bit;
+}
+
+static inline void stm32_clock_disable(const struct stm32_clock *clk)
+{
+    if (clk->en_reg)
+        *(volatile uint32_t *)clk->en_reg &= ~clk->en_bit;
+}
+
+static inline uint32_t stm32_clock_get_frequency(const struct stm32_clock *clk)
+{
+    return clk->frequency;
+}
 
 #endif /* __CLOCK_STM32U5_H__ */

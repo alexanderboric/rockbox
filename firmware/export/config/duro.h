@@ -13,7 +13,6 @@
 
 /* CPU defines */
 #define CPU_STM32U5A5
-#define STM32_LSE_FREQ      32768
 #define STM32_HSE_FREQ      16000000  /* Common for U5 dev boards; check your crystal! */
 #define CPU_FREQ            160000000 /* U5 max is 160MHz */
 

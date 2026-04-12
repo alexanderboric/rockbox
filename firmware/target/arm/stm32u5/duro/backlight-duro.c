@@ -1,7 +1,13 @@
-/*
- * Duro (STM32U5A5) Backlight Control
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
  *
- * Copyright (C) 2026
+ * Copyright (C) 2026 by Aidan MacDonald
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -10,52 +16,36 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ ****************************************************************************/
+#include "backlight.h"
+#include "gpio-stm32u5.h"
+#include "gpio-duro.h"
+
+/*
+ * Simple GPIO backlight driver.
+ * GPIO_BACKLIGHT (PB0) is high = on, low = off.
+ * Brightness control is not implemented (no PWM yet).
  */
 
-#include "system.h"
-#include "backlight-duro.h"
-
-/* Initialize backlight hardware */
-int backlight_hw_init(void)
+bool backlight_hw_init(void)
 {
-    /* TODO: Initialize backlight PWM control
-     * 1. Configure PWM timer for backlight control
-     * 2. Set GPIO pins for PWM output
-     * 3. Initialize brightness to default level
-     */
-    return 0;
+    /* Pin is already configured as output by gpio_configure_all(). */
+    return true;
 }
 
-/* Enable backlight */
 void backlight_hw_on(void)
 {
-    /* TODO: Enable backlight hardware */
+    gpio_set_level(GPIO_BACKLIGHT, 1);
 }
 
-/* Disable backlight */
 void backlight_hw_off(void)
 {
-    /* TODO: Disable backlight hardware */
+    gpio_set_level(GPIO_BACKLIGHT, 0);
 }
 
-/* Set backlight brightness */
 void backlight_hw_brightness(int brightness)
 {
-    /* TODO: Set backlight brightness using PWM
-     * - Adjust PWM duty cycle based on brightness level
-     * - Handle minimum/maximum brightness limits
-     */
+    /* No PWM: treat anything >0 as fully on */
     (void)brightness;
-}
-
-void backlight_init_duro(void)
-{
-    /* Maintained for compatibility */
-    backlight_hw_init();
-}
-
-void backlight_set_brightness_duro(int percent)
-{
-    /* Maintained for compatibility */
-    backlight_hw_brightness(percent);
 }

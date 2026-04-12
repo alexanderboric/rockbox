@@ -1987,16 +1987,12 @@ target/arm/stm32/echoplayer/usb-echoplayer.c
 #endif
 
 #if defined(DURO)
-#if defined(HAVE_AIC310X) && defined(STM32U5A5)
-target/arm/stm32u5/duro/audiohw-duro.c
-#endif
 target/arm/stm32u5/duro/audiohw-duro.c
 target/arm/stm32u5/duro/backlight-duro.c
 target/arm/stm32u5/duro/button-duro.c
 target/arm/stm32u5/duro/clock-duro.c
 target/arm/stm32u5/duro/i2c-duro.c
 target/arm/stm32u5/duro/lcd-duro.c
-target/arm/stm32u5/duro/audiohw-duro.c
 #ifndef BOOTLOADER
 target/arm/stm32u5/duro/pcm-duro.c
 #endif
@@ -2005,7 +2001,6 @@ target/arm/stm32u5/duro/sdmmc-duro.c
 target/arm/stm32u5/duro/system-duro.c
 target/arm/stm32u5/duro/usb-duro.c
 target/arm/stm32u5/duro/rtc-duro.c
-target/arm/stm32u5/crt0-stm32u5.S
 #endif
 
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)

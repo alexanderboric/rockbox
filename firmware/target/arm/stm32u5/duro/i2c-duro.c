@@ -1,7 +1,13 @@
-/*
- * Duro (STM32U5A5) I2C Bus Initialization
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
  *
- * Copyright (C) 2026
+ * Copyright (C) 2026 by Aidan MacDonald
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -10,18 +16,51 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ ****************************************************************************/
+#include "i2c-stm32u5.h"
+#include "clock-duro.h"
+#include "nvic-arm.h"
+#include "regs/stm32u5a5/i2c.h"
+
+/*
+ * I2C1 configuration: 400 kHz Fast Mode, HSI16 kernel clock (16 MHz).
+ * Pins: PB6 (SCL), PB7 (SDA), AF4.
+ * Timing parameters for Fast Mode per I2C specification (RM0456 §46.4):
+ *   SCL low  >= 1300 ns
+ *   SCL high >=  600 ns
+ *   SDA setup >= 100 ns
+ *   SDA hold  <= 900 ns (from SCL falling)
+ *   Rise time <= 300 ns (with 4.7k pull-ups)
+ *   Fall time <= 300 ns
  */
+static const struct stm32_i2c_config i2c1_conf INITDATA_ATTR = {
+    .instance        = ITA_I2C1,
+    .ker_clock       = &i2c1_ker_clock,
+    .bus_freq_hz     = 400000,
+    .scl_low_min_ns  = 1300,
+    .scl_high_min_ns = 600,
+    .t_vd_dat_max_ns = 900,
+    .t_su_dat_max_ns = 100,
+    .rise_time_max_ns = 300,
+    .fall_time_max_ns = 300,
+};
 
-#include "system.h"
-#include "i2c-duro.h"
+struct stm32_i2c_controller i2c1_ctl;
 
-void i2c_init_duro(void)
+void i2c_init(void)
 {
-    /* TODO: Initialize I2C buses for Duro
-     * 1. Configure GPIO pins for SDA/SCL
-     * 2. Initialize I2C1 for codec and other devices
-     * 3. Set I2C clock speed (typically 400 kHz)
-     * 4. Enable I2C peripheral
-     * 5. Configure interrupts if needed
-     */
+    stm32_i2c_init(&i2c1_ctl, &i2c1_conf);
+    nvic_enable_irq(NVIC_IRQN_I2C1_EV);
+    nvic_enable_irq(NVIC_IRQN_I2C1_ER);
+}
+
+void i2c1_ev_irq_handler(void)
+{
+    stm32_i2c_irq_handler(&i2c1_ctl);
+}
+
+void i2c1_er_irq_handler(void)
+{
+    stm32_i2c_irq_handler(&i2c1_ctl);
 }

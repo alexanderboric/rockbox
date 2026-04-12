@@ -1,7 +1,13 @@
-/*
- * Duro (STM32U5A5) USB Support
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
  *
- * Copyright (C) 2026
+ * Copyright (C) 2026 by Aidan MacDonald
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -10,136 +16,89 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ ****************************************************************************/
+#include "system.h"
+#include "usb.h"
+#include "usb_core.h"
+#include "gpio-stm32u5.h"
+#include "gpio-duro.h"
+#include "nvic-arm.h"
+#include "regs/stm32u5a5/rcc.h"
+#include "regs/stm32u5a5/exti.h"
+
+/*
+ * USB DRD Full-Speed driver for STM32U5A5.
+ * The U5 has an internal USB PHY (no external ULPI needed).
+ * Clock: HSI48, selected via RCC_CCIPR2 ICLKSEL=0.
+ * Pins: PA11 (DM, AF10), PA12 (DP, AF10) - configured as analog by default.
+ *
+ * VBUS sense: PA9 (input, no pull).
+ * EXTI9 is used to detect VBUS changes (rising and falling edge).
+ *
+ * IRQ: OTG_FS = NVIC_IRQN_OTG_FS (73).
  */
 
-#include "system.h"
-#include "usb-duro.h"
-
-void usb_init_duro(void)
+static void duro_usb_enable(void)
 {
-    /* TODO: Initialize USB for Duro
-     * 1. Configure USB OTG High-Speed PHY
-     * 2. Initialize USB controller
-     * 3. Set USB bus attached mode
-     * 4. Configure USB clock tree
-     * 5. Set up USB device descriptors
-     */
+    /* Enable USB FS peripheral clock */
+    reg_writef(RCC_AHB2ENR1, USB_FSEN(1));
+
+    usb_core_init();
 }
 
-int usb_detect(void)
+static void duro_usb_disable(void)
 {
-    /* TODO: Detect USB cable connection */
-    return 0;
+    usb_core_exit();
+
+    /* Gate USB FS clock */
+    reg_writef(RCC_AHB2ENR1, USB_FSEN(0));
 }
 
 void usb_init_device(void)
 {
-    usb_init_duro();
+    /*
+     * Configure EXTI9 for VBUS detection (PA9).
+     * EXTICR3 covers EXTI8-11; EXTI9 is bits [15:8].
+     * Port A = 0x00.
+     */
+    reg_writef(RCC_APB3ENR, SYSCFGEN(1));
+
+    volatile uint32_t *exticr3 = ITA_EXTI_EXTICR(2);  /* EXTICR3 covers EXTI8-11 */
+    *exticr3 = (*exticr3 & ~EXTI_EXTICR_PORT_MASK(9)) |
+                EXTI_EXTICR_PORT(9, 0 /* port A */);
+
+    reg_writef(RCC_APB3ENR, SYSCFGEN(0));
+
+    /* Enable rising and falling edge triggers for EXTI9 */
+    reg_var(EXTI_RTSR1) |= BIT_N(GPION_PIN(GPIO_USB_VBUS));
+    reg_var(EXTI_FTSR1) |= BIT_N(GPION_PIN(GPIO_USB_VBUS));
+    reg_var(EXTI_IMR1)  |= BIT_N(GPION_PIN(GPIO_USB_VBUS));
+
+    nvic_enable_irq(NVIC_IRQN_EXTI9);
 }
 
-void usb_drv_init(void)
+void usb_enable(bool on)
 {
-    /* TODO: Initialize USB driver */
+    if (on)
+        duro_usb_enable();
+    else
+        duro_usb_disable();
 }
 
-void usb_drv_exit(void)
+int usb_detect(void)
 {
-    /* TODO: Exit USB driver */
+    if (gpio_get_level(GPIO_USB_VBUS))
+        return USB_INSERTED;
+
+    return USB_EXTRACTED;
 }
 
-void usb_drv_stall(int ep, bool stall, bool in)
+void exti9_irq_handler(void)
 {
-    /* TODO: Stall/unstall endpoint */
-    (void)ep; (void)stall; (void)in;
-}
+    /* Clear pending EXTI9 flag in both rising and falling pending registers */
+    reg_var(EXTI_RPR1) = BIT_N(GPION_PIN(GPIO_USB_VBUS));
+    reg_var(EXTI_FPR1) = BIT_N(GPION_PIN(GPIO_USB_VBUS));
 
-int usb_drv_send(int ep, void *ptr, int len)
-{
-    /* TODO: Send data on endpoint */
-    (void)ep; (void)ptr; (void)len;
-    return len;
-}
-
-int usb_drv_recv(int ep, void *ptr, int len)
-{
-    /* TODO: Receive data on endpoint */
-    (void)ep; (void)ptr; (void)len;
-    return len;
-}
-
-void usb_drv_set_address(unsigned char address)
-{
-    /* TODO: Set USB device address */
-    (void)address;
-}
-
-int usb_drv_port_speed(void)
-{
-    /* TODO: Return USB port speed (USB_SPEED_HIGH, etc) */
-    return 0;
-}
-
-void usb_enable(bool enable)
-{
-    /* TODO: Enable/disable USB device */
-    (void)enable;
-}
-
-void usb_attach(void)
-{
-    /* TODO: Attach USB device to bus */
-}
-
-void usb_charging_maxcurrent_change(int maxcurrent)
-{
-    /* TODO: Update maximum charge current */
-    (void)maxcurrent;
-}
-
-void usb_drv_init_endpoint(int ep, struct usb_endpoint_descriptor *desc)
-{
-    /* TODO: Initialize USB endpoint */
-    (void)ep; (void)desc;
-}
-
-void usb_drv_deinit_endpoint(int ep)
-{
-    /* TODO: Deinitialize USB endpoint */
-    (void)ep;
-}
-
-void usb_drv_control_response(int flags, const void *data, int length)
-{
-    /* TODO: Send USB control response */
-    (void)flags; (void)data; (void)length;
-}
-
-void usb_drv_cancel_all_transfers(void)
-{
-    /* TODO: Cancel all USB transfers */
-}
-
-void usb_drv_set_test_mode(int mode)
-{
-    /* TODO: Set USB test mode */
-    (void)mode;
-}
-
-int usb_drv_stalled(int ep, bool in)
-{
-    /* TODO: Check if endpoint is stalled */
-    (void)ep; (void)in;
-    return 0;
-}
-
-const struct usb_endpoint_descriptor *usb_drv_ep_specs(void)
-{
-    /* TODO: Return USB endpoint specifications */
-    return NULL;
-}
-
-const int *usb_drv_ep_specs_flags(void)
-{
-    /* TODO: Return USB endpoint flags */
-    return NULL;
+    usb_status_event(usb_detect());
 }

@@ -73,4 +73,6 @@ void securefault_handler(void) ATTR_IRQ_HANDLER;
  */
 #if CONFIG_CPU == STM32H743
 # include "irqhandlers-stm32h743.c"
+#elif CONFIG_CPU == STM32U5A5
+# include "irqhandlers-stm32u5a5.c"
 #endif

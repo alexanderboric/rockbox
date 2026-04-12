@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /Users/alexanderboric/Desktop/linux-shared/mp3/rockbox/firmware/target/arm/regs/cortex-m)",
+      "Bash(mkdir -p /Users/alexanderboric/Desktop/linux-shared/mp3/rockbox/firmware/target/arm/stm32u5/regs/stm32u5a5)"
+    ]
+  }
+}
