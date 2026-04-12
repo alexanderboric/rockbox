@@ -135,7 +135,7 @@ void stm32u5_sdmmc_set_power_enabled(void *controller, bool enabled)
         if (ctl->vcc_enable)
             ctl->vcc_enable(true);
 
-        reg_writelf(ctl->regs, SDMMC_POWER, PWRCTRL_V(POWER_OFF));
+        reg_writelf(ctl->regs, SDMMC_POWER, PWRCTRL(BV_SDMMC_POWER_PWRCTRL_POWER_OFF));
         sleep(1);
 
         stm32_clock_enable(ctl->clock);
@@ -145,7 +145,7 @@ void stm32u5_sdmmc_set_power_enabled(void *controller, bool enabled)
         reg_writelf(ctl->regs, SDMMC_CLKCR, PWRSAV(0));
 
         /* Power on: wait >= 74 SDMMC clock cycles (185 us at 400 kHz) */
-        reg_writelf(ctl->regs, SDMMC_POWER, PWRCTRL_V(POWER_ON));
+        reg_writelf(ctl->regs, SDMMC_POWER, PWRCTRL(BV_SDMMC_POWER_PWRCTRL_POWER_ON));
         udelay(200);
 
         reg_writelf(ctl->regs, SDMMC_CLKCR, PWRSAV(1), HWFC_EN(1));
@@ -159,7 +159,7 @@ void stm32u5_sdmmc_set_power_enabled(void *controller, bool enabled)
         if (ctl->vcc_enable)
             ctl->vcc_enable(false);
 
-        reg_writelf(ctl->regs, SDMMC_POWER, PWRCTRL_V(POWER_CYCLE));
+        reg_writelf(ctl->regs, SDMMC_POWER, PWRCTRL(BV_SDMMC_POWER_PWRCTRL_POWER_CYCLE));
         sleep(1);
     }
 }
@@ -172,11 +172,11 @@ void stm32u5_sdmmc_set_bus_width(void *controller, uint32_t width)
         return;
 
     if (width == SDMMC_BUS_WIDTH_1BIT)
-        reg_writelf(ctl->regs, SDMMC_CLKCR, WIDBUS_V(1BIT));
+        reg_writelf(ctl->regs, SDMMC_CLKCR, WIDBUS(BV_SDMMC_CLKCR_WIDBUS_1BIT));
     else if (width == SDMMC_BUS_WIDTH_4BIT)
-        reg_writelf(ctl->regs, SDMMC_CLKCR, WIDBUS_V(4BIT));
+        reg_writelf(ctl->regs, SDMMC_CLKCR, WIDBUS(BV_SDMMC_CLKCR_WIDBUS_4BIT));
     else if (width == SDMMC_BUS_WIDTH_8BIT)
-        reg_writelf(ctl->regs, SDMMC_CLKCR, WIDBUS_V(8BIT));
+        reg_writelf(ctl->regs, SDMMC_CLKCR, WIDBUS(BV_SDMMC_CLKCR_WIDBUS_8BIT));
     else
         panicf("%s", __func__);
 
@@ -221,8 +221,8 @@ void stm32u5_sdmmc_set_bus_clock(void *controller, uint32_t clock)
 
     ctl->bus_freq = freq[idx];
     reg_writelf(ctl->regs, SDMMC_CLKCR,
-                SELCLKRX_V(SDMMC_IO_IN_CK),
-                BUSSPEED_V(SLOW),
+                SELCLKRX(BV_SDMMC_CLKCR_SELCLKRX_SDMMC_IO_IN_CK),
+                BUSSPEED(BV_SDMMC_CLKCR_BUSSPEED_SLOW),
                 DDR(0),
                 NEGEDGE(0),
                 CLKDIV(div[idx] / 2));
@@ -247,26 +247,26 @@ int stm32u5_sdmmc_submit_command(void *controller,
     switch (SDMMC_RESP_LENGTH(cmd->flags))
     {
     case SDMMC_RESP_NONE:
-        reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP_V(NONE));
+        reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP(BV_SDMMC_CMDR_WAITRESP_NONE));
         reg_vwritef(maskr, SDMMC_STAR, CMDSENT(1));
         break;
 
     case SDMMC_RESP_SHORT:
         if (cmd->flags & SDMMC_RESP_NOCRC)
         {
-            reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP_V(SHORT_NOCRC));
+            reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP(BV_SDMMC_CMDR_WAITRESP_SHORT_NOCRC));
             reg_vwritef(maskr, SDMMC_STAR, CCRCFAIL(0));
         }
         else
         {
-            reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP_V(SHORT));
+            reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP(BV_SDMMC_CMDR_WAITRESP_SHORT));
         }
 
         reg_vwritef(maskr, SDMMC_STAR, CMDREND(1));
         break;
 
     case SDMMC_RESP_LONG:
-        reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP_V(LONG));
+        reg_vwritef(cmdr, SDMMC_CMDR, WAITRESP(BV_SDMMC_CMDR_WAITRESP_LONG));
         reg_vwritef(maskr, SDMMC_STAR, CMDREND(1));
         break;
 

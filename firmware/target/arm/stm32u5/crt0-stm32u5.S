@@ -19,7 +19,6 @@
  *
  ****************************************************************************/
 #include "config.h"
-#include "regs/stm32u5a5/pwr.h"
 
     .syntax unified
     .text
@@ -39,10 +38,10 @@ reset_handler:
      * PWR_VOSR offset: 0x00C
      * VOSRDY: bit 15
      */
-    ldr     r0, =ITA_PWR_VOSR
+    ldr     r0, =0x4602080C  @ PWR_VOSR address
 1:
     ldr     r1, [r0]                    @ Read PWR_VOSR
-    ands    r1, #BM_PWR_VOSR_VOSRDY    @ Check VOSRDY bit
+    ands    r1, #(1 << 15)              @ Check VOSRDY bit
     beq     1b                          @ Loop until VOSRDY is set
 
     b       crt0_start
