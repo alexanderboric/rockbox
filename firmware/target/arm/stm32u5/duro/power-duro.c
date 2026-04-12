@@ -61,7 +61,7 @@ void power_off(void)
      */
     disable_irq();
     duro_set_rtcout_mode(DURO_RTCOUT_DISABLED);
-    reg_writef(CM_SCB_AIRCR, VECTKEY_V(KEY), SYSRESETREQ(1));
+    reg_writef(CM_SCB_AIRCR, VECTKEY(BV_CM_SCB_AIRCR_VECTKEY_KEY), SYSRESETREQ(1));
     while (1);
 }
 
@@ -69,7 +69,7 @@ void system_reboot(void)
 {
     disable_irq();
     duro_set_rtcout_mode(DURO_RTCOUT_REBOOT);
-    reg_writef(CM_SCB_AIRCR, VECTKEY_V(KEY), SYSRESETREQ(1));
+    reg_writef(CM_SCB_AIRCR, VECTKEY(BV_CM_SCB_AIRCR_VECTKEY_KEY), SYSRESETREQ(1));
     while (1);
 }
 

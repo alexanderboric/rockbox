@@ -253,13 +253,31 @@ static void enable_ltdc(void)
      */
     const uint32_t row_bytes = LCD_WIDTH * LCD_DEPTH / 8;
 
-    reg_assignf(LTDC_LAYER_WHPCR(0), WHSTPOS(ahbp + 1), WHSPPOS(ahbp + LCD_HAW));
-    reg_assignf(LTDC_LAYER_WVPCR(0), WVSTPOS(avbp + 1), WVSPPOS(avbp + LCD_VAH));
-    reg_assignf(LTDC_LAYER_PFCR(0),  PF(BV_LTDC_LAYER_PFCR_PF_RGB565));
-    reg_var(LTDC_LAYER_CFBAR(0))   = (uintptr_t)FBADDR(0, 0);
-    reg_assignf(LTDC_LAYER_CFBLR(0),  CFBP(row_bytes), CFBLL(row_bytes + 3));
-    reg_assignf(LTDC_LAYER_CFBLNR(0), CFBLNBR(LCD_HEIGHT));
-    reg_assignf(LTDC_LAYER_CR(0),     LEN(1));
+    /* Window horizontal position control register */
+    *(volatile uint32_t *)(LTDC_LAYER_BASE + 0*LTDC_LAYER_STRIDE + 0x004) = 
+        BF_LTDC_LAYER_WHPCR_WHSTPOS(ahbp + 1) | BF_LTDC_LAYER_WHPCR_WHSPPOS(ahbp + LCD_HAW);
+    
+    /* Window vertical position control register */
+    *(volatile uint32_t *)(LTDC_LAYER_BASE + 0*LTDC_LAYER_STRIDE + 0x008) = 
+        BF_LTDC_LAYER_WVPCR_WVSTPOS(avbp + 1) | BF_LTDC_LAYER_WVPCR_WVSPPOS(avbp + LCD_VAH);
+    
+    /* Pixel format control register */
+    *(volatile uint32_t *)(LTDC_LAYER_BASE + 0*LTDC_LAYER_STRIDE + 0x010) = 
+        BF_LTDC_LAYER_PFCR_PF(BV_LTDC_LAYER_PFCR_PF_RGB565);
+    
+    /* Color frame buffer address register */
+    *(volatile uint32_t *)(LTDC_LAYER_BASE + 0*LTDC_LAYER_STRIDE + 0x028) = (uintptr_t)FBADDR(0, 0);
+    
+    /* Color frame buffer length register */
+    *(volatile uint32_t *)(LTDC_LAYER_BASE + 0*LTDC_LAYER_STRIDE + 0x02C) = 
+        BF_LTDC_LAYER_CFBLR_CFBP(row_bytes) | BF_LTDC_LAYER_CFBLR_CFBLL(row_bytes + 3);
+    
+    /* Color frame buffer line number register */
+    *(volatile uint32_t *)(LTDC_LAYER_BASE + 0*LTDC_LAYER_STRIDE + 0x030) = 
+        BF_LTDC_LAYER_CFBLNR_CFBLNBR(LCD_HEIGHT);
+    
+    /* Layer control register */
+    *(volatile uint32_t *)(LTDC_LAYER_BASE + 0*LTDC_LAYER_STRIDE + 0x000) = BF_LTDC_LAYER_CR_LEN(1);
 
     /* Reload shadow registers immediately */
     reg_writef(LTDC_SRCR, IMR(1));

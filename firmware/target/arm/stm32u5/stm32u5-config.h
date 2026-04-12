@@ -40,20 +40,20 @@
  */
 
 /* Vectors + init code placed at start of SRAM1 */
-#define STM32_ITCM_BASE     0x20000000u
-#define STM32_ITCM_SIZE     (32u * 1024u)   /* 32 KB */
+#define STM32_ITCM_BASE     0x20000000
+#define STM32_ITCM_SIZE     0x8000   /* 32 KB */
 
 /* Stack placed after init code region */
-#define STM32_DTCM_BASE     (STM32_ITCM_BASE + STM32_ITCM_SIZE)
-#define STM32_DTCM_SIZE     (32u * 1024u)   /* 32 KB */
+#define STM32_DTCM_BASE     0x20008000
+#define STM32_DTCM_SIZE     0x8000   /* 32 KB */
 
 /* Main SRAM: everything after stack region */
-#define STM32_SRAM_BASE     (STM32_DTCM_BASE + STM32_DTCM_SIZE)
-#define STM32_SRAM_SIZE     (1984u * 1024u) /* 1984 KB = 2MB - 64KB reserved */
+#define STM32_SRAM_BASE     0x20010000
+#define STM32_SRAM_SIZE     0x1F0000 /* 1984 KB = 2MB - 64KB reserved */
 
 /* External OctoSPI PSRAM (for audio/codec/plugin buffers) */
-#define STM32_PSRAM_BASE    0x90000000u
-#define STM32_PSRAM_SIZE    (8u * 1024u * 1024u) /* 8 MB */
+#define STM32_PSRAM_BASE    0x90000000
+#define STM32_PSRAM_SIZE    0x800000 /* 8 MB */
 
 /* USB OTG instance selection */
 #define STM32U5_USBOTG_INSTANCE_FS     0
